@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32922.545
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TicTacToe(SelectionDrivenRL)", "TicTacToe(SelectionDrivenRL)\TicTacToe(SelectionDrivenRL).vcxproj", "{0DBD6D20-AF58-4E14-99CA-5E56A1D6489F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0DBD6D20-AF58-4E14-99CA-5E56A1D6489F}.Debug|x64.ActiveCfg = Debug|x64
+		{0DBD6D20-AF58-4E14-99CA-5E56A1D6489F}.Debug|x64.Build.0 = Debug|x64
+		{0DBD6D20-AF58-4E14-99CA-5E56A1D6489F}.Debug|x86.ActiveCfg = Debug|Win32
+		{0DBD6D20-AF58-4E14-99CA-5E56A1D6489F}.Debug|x86.Build.0 = Debug|Win32
+		{0DBD6D20-AF58-4E14-99CA-5E56A1D6489F}.Release|x64.ActiveCfg = Release|x64
+		{0DBD6D20-AF58-4E14-99CA-5E56A1D6489F}.Release|x64.Build.0 = Release|x64
+		{0DBD6D20-AF58-4E14-99CA-5E56A1D6489F}.Release|x86.ActiveCfg = Release|Win32
+		{0DBD6D20-AF58-4E14-99CA-5E56A1D6489F}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {070F26B6-1FB2-46F3-BC58-7961631C1C0C}
+	EndGlobalSection
+EndGlobal
