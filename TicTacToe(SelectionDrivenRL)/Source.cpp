@@ -41,6 +41,13 @@ int main()
 	float biasMatrixThree[SOFTMAX_SIZE];
 	float softmaxMatrix[SOFTMAX_SIZE];
 
+	cpuGenerateUniform(weightMatrixOne, WEIGHT_ONE_SIZE, -1.0f, 1.0f);
+	cpuGenerateUniform(weightMatrixTwo, WEIGHT_TWO_SIZE, -1.0f, 1.0f);
+	cpuGenerateUniform(weightMatrixThree, WEIGHT_THREE_SIZE, -1.0f, 1.0f);
+	cpuGenerateUniform(biasMatrixOne, LEAKY_ONE_SIZE, -1.0f, 1.0f);
+	cpuGenerateUniform(biasMatrixTwo, LEAKY_TWO_SIZE, -1.0f, 1.0f);
+	cpuGenerateUniform(biasMatrixThree, SOFTMAX_SIZE, -1.0f, 1.0f);
+
 	for (;;)
 	{
 		printf("\n\nNew Game of TicTacToe\n");
@@ -76,6 +83,48 @@ int main()
 			memcpy(inputMatrix, board, sizeof(int) * BOARD_SIZE);
 			inputMatrix[BOARD_SIZE] = turn;
 			PrintMatrix(inputMatrix, 1, INPUT_SIZE, "Input Matrix");
+			cpuSgemmStridedBatched(
+				false, false,
+				LEAKY_ONE_SIZE, 1, INPUT_SIZE,
+				&GLOBAL::ONEF,
+				weightMatrixOne, LEAKY_ONE_SIZE, 0,
+				inputMatrix, INPUT_SIZE, 0,
+				&GLOBAL::ZEROF,
+				productMatrixOne, LEAKY_ONE_SIZE, 0,
+				1);
+			PrintMatrix(productMatrixOne, 1, LEAKY_ONE_SIZE, "Product Matrix One");
+			cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, biasMatrixOne, 1, productMatrixOne, 1);
+			PrintMatrix(productMatrixOne, 1, LEAKY_ONE_SIZE, "Product Matrix One + Bias");
+			cpuLeakyRelu(productMatrixOne, leakyMatrixOne, LEAKY_ONE_SIZE);
+			PrintMatrix(leakyMatrixOne, 1, LEAKY_ONE_SIZE, "Leaky Matrix One");
+			cpuSgemmStridedBatched(
+				false, false,
+				LEAKY_TWO_SIZE, 1, LEAKY_ONE_SIZE,
+				&GLOBAL::ONEF,
+				weightMatrixTwo, LEAKY_TWO_SIZE, 0,
+				leakyMatrixOne, LEAKY_ONE_SIZE, 0,
+				&GLOBAL::ZEROF,
+				productMatrixTwo, LEAKY_TWO_SIZE, 0,
+				1);
+			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two");
+			cpuSaxpy(LEAKY_TWO_SIZE, &GLOBAL::ONEF, biasMatrixTwo, 1, productMatrixTwo, 1);
+			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two + Bias");
+			cpuLeakyRelu(productMatrixTwo, leakyMatrixTwo, LEAKY_TWO_SIZE);
+			PrintMatrix(leakyMatrixTwo, 1, LEAKY_TWO_SIZE, "Leaky Matrix Two");
+			cpuSgemmStridedBatched(
+				false, false,
+				SOFTMAX_SIZE, 1, LEAKY_TWO_SIZE,
+				&GLOBAL::ONEF,
+				weightMatrixThree, SOFTMAX_SIZE, 0,
+				leakyMatrixTwo, LEAKY_TWO_SIZE, 0,
+				&GLOBAL::ZEROF,
+				productMatrixThree, SOFTMAX_SIZE, 0,
+				1);
+			PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three");
+			cpuSaxpy(SOFTMAX_SIZE, &GLOBAL::ONEF, biasMatrixThree, 1, productMatrixThree, 1);
+			PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three + Bias");
+			cpuSoftmax(productMatrixThree, softmaxMatrix, SOFTMAX_SIZE);
+			PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");
 			
 			uint32_t playerInput;
 			printf("Enter position (0 - 8): ");
