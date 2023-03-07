@@ -36,6 +36,16 @@ public:
 		float biasMatrixTwo[LEAKY_TWO_SIZE];
 		float weightMatrixThree[WEIGHT_THREE_SIZE];
 		float biasMatrixThree[SOFTMAX_SIZE];
+
+		Parameters()
+		{
+			cpuGenerateUniform(weightMatrixOne, WEIGHT_ONE_SIZE, -1.0f, 1.0f);
+			cpuGenerateUniform(weightMatrixTwo, WEIGHT_TWO_SIZE, -1.0f, 1.0f);
+			cpuGenerateUniform(weightMatrixThree, WEIGHT_THREE_SIZE, -1.0f, 1.0f);
+			cpuGenerateUniform(biasMatrixOne, LEAKY_ONE_SIZE, -1.0f, 1.0f);
+			cpuGenerateUniform(biasMatrixTwo, LEAKY_TWO_SIZE, -1.0f, 1.0f);
+			cpuGenerateUniform(biasMatrixThree, SOFTMAX_SIZE, -1.0f, 1.0f);
+		}
 	};
 
 	struct Computation
@@ -50,81 +60,98 @@ public:
 		float softmaxMatrix[SOFTMAX_SIZE];
 		uint32_t sampledAction;
 		bool* isWinner;
-	};
-	
-	NeuralNetwork()
-	{
-		cpuGenerateUniform(weightMatrixOne, WEIGHT_ONE_SIZE, -1.0f, 1.0f);
-		cpuGenerateUniform(weightMatrixTwo, WEIGHT_TWO_SIZE, -1.0f, 1.0f);
-		cpuGenerateUniform(weightMatrixThree, WEIGHT_THREE_SIZE, -1.0f, 1.0f);
-		cpuGenerateUniform(biasMatrixOne, LEAKY_ONE_SIZE, -1.0f, 1.0f);
-		cpuGenerateUniform(biasMatrixTwo, LEAKY_TWO_SIZE, -1.0f, 1.0f);
-		cpuGenerateUniform(biasMatrixThree, SOFTMAX_SIZE, -1.0f, 1.0f);
-	}
 
-	~NeuralNetwork()
-	{
-	}
-
-	uint32_t ForwardPropagate(float* board, float turn)
-	{
-		memcpy(inputMatrix, board, sizeof(int) * BOARD_SIZE);
-		inputMatrix[BOARD_SIZE] = turn;
-		//PrintMatrix(inputMatrix, 1, INPUT_SIZE, "Input Matrix");
-		cpuSgemmStridedBatched(
-			false, false,
-			LEAKY_ONE_SIZE, 1, INPUT_SIZE,
-			&GLOBAL::ONEF,
-			weightMatrixOne, LEAKY_ONE_SIZE, 0,
-			inputMatrix, INPUT_SIZE, 0,
-			&GLOBAL::ZEROF,
-			productMatrixOne, LEAKY_ONE_SIZE, 0,
-			1);
-		//PrintMatrix(productMatrixOne, 1, LEAKY_ONE_SIZE, "Product Matrix One");
-		cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, biasMatrixOne, 1, productMatrixOne, 1);
-		//PrintMatrix(productMatrixOne, 1, LEAKY_ONE_SIZE, "Product Matrix One + Bias");
-		cpuLeakyRelu(productMatrixOne, leakyMatrixOne, LEAKY_ONE_SIZE);
-		//PrintMatrix(leakyMatrixOne, 1, LEAKY_ONE_SIZE, "Leaky Matrix One");
-		cpuSgemmStridedBatched(
-			false, false,
-			LEAKY_TWO_SIZE, 1, LEAKY_ONE_SIZE,
-			&GLOBAL::ONEF,
-			weightMatrixTwo, LEAKY_TWO_SIZE, 0,
-			leakyMatrixOne, LEAKY_ONE_SIZE, 0,
-			&GLOBAL::ZEROF,
-			productMatrixTwo, LEAKY_TWO_SIZE, 0,
-			1);
-		//PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two");
-		cpuSaxpy(LEAKY_TWO_SIZE, &GLOBAL::ONEF, biasMatrixTwo, 1, productMatrixTwo, 1);
-		//PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two + Bias");
-		cpuLeakyRelu(productMatrixTwo, leakyMatrixTwo, LEAKY_TWO_SIZE);
-		//PrintMatrix(leakyMatrixTwo, 1, LEAKY_TWO_SIZE, "Leaky Matrix Two");
-		cpuSgemmStridedBatched(
-			false, false,
-			SOFTMAX_SIZE, 1, LEAKY_TWO_SIZE,
-			&GLOBAL::ONEF,
-			weightMatrixThree, SOFTMAX_SIZE, 0,
-			leakyMatrixTwo, LEAKY_TWO_SIZE, 0,
-			&GLOBAL::ZEROF,
-			productMatrixThree, SOFTMAX_SIZE, 0,
-			1);
-		//PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three");
-		cpuSaxpy(SOFTMAX_SIZE, &GLOBAL::ONEF, biasMatrixThree, 1, productMatrixThree, 1);
-		//PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three + Bias");
-		cpuSoftmax(productMatrixThree, softmaxMatrix, SOFTMAX_SIZE);
-		//PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");
-
-		float randomNumber = GLOBAL::RANDOM.Rfloat();
-		sampledAction = 0;
-		for (;;)
+		uint32_t SampleAction(Parameters* parameters, float* board, float turn, bool* isWinner)
 		{
-			randomNumber -= softmaxMatrix[sampledAction];
-			if (randomNumber <= 0)
-				break;
-			sampledAction -= (++sampledAction >= SOFTMAX_SIZE) * SOFTMAX_SIZE;
+			this->parameters = parameters;
+			this->isWinner = isWinner;
+			
+			memcpy(inputMatrix, board, sizeof(int) * BOARD_SIZE);
+			inputMatrix[BOARD_SIZE] = turn;
+			cpuSgemmStridedBatched(
+				false, false,
+				LEAKY_ONE_SIZE, 1, INPUT_SIZE,
+				&GLOBAL::ONEF,
+				parameters->weightMatrixOne, LEAKY_ONE_SIZE, 0,
+				inputMatrix, INPUT_SIZE, 0,
+				&GLOBAL::ZEROF,
+				productMatrixOne, LEAKY_ONE_SIZE, 0,
+				1);
+			cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, parameters->biasMatrixOne, 1, productMatrixOne, 1);
+			cpuLeakyRelu(productMatrixOne, leakyMatrixOne, LEAKY_ONE_SIZE);
+			cpuSgemmStridedBatched(
+				false, false,
+				LEAKY_TWO_SIZE, 1, LEAKY_ONE_SIZE,
+				&GLOBAL::ONEF,
+				parameters->weightMatrixTwo, LEAKY_TWO_SIZE, 0,
+				leakyMatrixOne, LEAKY_ONE_SIZE, 0,
+				&GLOBAL::ZEROF,
+				productMatrixTwo, LEAKY_TWO_SIZE, 0,
+				1);
+			cpuSaxpy(LEAKY_TWO_SIZE, &GLOBAL::ONEF, parameters->biasMatrixTwo, 1, productMatrixTwo, 1);
+			cpuLeakyRelu(productMatrixTwo, leakyMatrixTwo, LEAKY_TWO_SIZE);
+			cpuSgemmStridedBatched(
+				false, false,
+				SOFTMAX_SIZE, 1, LEAKY_TWO_SIZE,
+				&GLOBAL::ONEF,
+				parameters->weightMatrixThree, SOFTMAX_SIZE, 0,
+				leakyMatrixTwo, LEAKY_TWO_SIZE, 0,
+				&GLOBAL::ZEROF,
+				productMatrixThree, SOFTMAX_SIZE, 0,
+				1);
+			cpuSaxpy(SOFTMAX_SIZE, &GLOBAL::ONEF, parameters->biasMatrixThree, 1, productMatrixThree, 1);
+			cpuSoftmax(productMatrixThree, softmaxMatrix, SOFTMAX_SIZE);
+			
+			float randomNumber = GLOBAL::RANDOM.Rfloat();
+			sampledAction = 0;
+			for (;;)
+			{
+				randomNumber -= softmaxMatrix[sampledAction];
+				if (randomNumber <= 0)
+					break;
+				sampledAction -= (++sampledAction >= SOFTMAX_SIZE) * SOFTMAX_SIZE;
+			}
+			return sampledAction;
 		}
-		printf("Sampled Action: %d\n", sampledAction);
-		return sampledAction;
+
+		void Print()
+		{
+			/*PrintMatrix(inputMatrix, 1, INPUT_SIZE, "Input Matrix");
+			PrintMatrix(productMatrixOne, 1, LEAKY_ONE_SIZE, "Product Matrix One");
+			PrintMatrix(productMatrixOne, 1, LEAKY_ONE_SIZE, "Product Matrix One + Bias");
+			PrintMatrix(leakyMatrixOne, 1, LEAKY_ONE_SIZE, "Leaky Matrix One");
+			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two");
+			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two + Bias");
+			PrintMatrix(leakyMatrixTwo, 1, LEAKY_TWO_SIZE, "Leaky Matrix Two");
+			PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three");
+			PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three + Bias");
+			PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");*/
+			printf("Sampled Action: %d\n", sampledAction);
+			printf("Is Winner: %d\n", *isWinner);
+		}
+	};
+
+	Parameters parameters;
+	std::vector<Computation*> computations;
+
+	uint32_t ForwardPropagate(float* board, float turn, bool* isWinner)
+	{
+		Computation* computation = new Computation();
+		computations.emplace_back(computation);
+		return computation->SampleAction(&parameters, board, turn, isWinner);
+	}
+
+	void BackPropagate()
+	{
+		for (auto computation : computations)
+		{
+			computation->Print();
+		}
+		for (auto computation : computations)
+		{
+			delete computation;
+		}
+		computations.clear();
 	}
 };
 
@@ -134,9 +161,13 @@ int main()
 	constexpr uint32_t BOARD_SIZE = BOARD_WIDTH * BOARD_WIDTH;
 	NeuralNetwork network;
 
-	for (;;)
+	//for (;;)
+	for (uint32_t i = 1; i--;)
 	{
-		printf("\n\nNew Game of TicTacToe\n");
+		bool* playerOneWins = new bool(false);
+		bool* playerTwoWins = new bool(false);
+		
+		printf("\nNew Game of TicTacToe\n");
 		uint32_t numMoves = 0;
 		int row[BOARD_SIZE];
 		int col[BOARD_SIZE];
@@ -165,21 +196,30 @@ int main()
 				}
 				printf("\n");
 			}
+			printf("\n");
 			
-			network.ForwardPropagate(board, turn);
 			uint32_t playerInput;
-			printf("Enter position (0 - 8): ");
-			scanf_s("%d", &playerInput);
-			if (playerInput < 0 || playerInput > 8 || board[playerInput] != 0)
+			if (turn == 1.0f)
+			{
+				playerInput = network.ForwardPropagate(board, turn, playerOneWins);
+			}
+			else
+			{
+				playerInput = network.ForwardPropagate(board, turn, playerTwoWins);
+			}
+			
+			if (board[playerInput] != 0)
 			{
 				gameRunning = false;
 				if (turn == 1)
 				{
 					printf("Player 2 Wins due to Invalid Input\n");
+					*playerTwoWins = true;
 				}
 				else
 				{
 					printf("Player 1 Wins due to Invalid Input\n");
+					*playerOneWins = true;
 				}
 				break;
 			}
@@ -198,21 +238,30 @@ int main()
 			{
 				gameRunning = false;
 				printf("Draw\n");
+				*playerOneWins = false;
+				*playerTwoWins = false;
 				break;
 			}
 			else if (row[rowPos] == BOARD_WIDTH || col[colPos] == BOARD_WIDTH || diagonal == BOARD_WIDTH || antiDiagonal == BOARD_WIDTH)
 			{
 				gameRunning = false;
 				printf("Player 2 Wins\n");
+				*playerTwoWins = true;
 				break;
 			}
 			else if (-row[rowPos] == BOARD_WIDTH || -col[colPos] == BOARD_WIDTH || -diagonal == BOARD_WIDTH || -antiDiagonal == BOARD_WIDTH)
 			{
 				gameRunning = false;
 				printf("Player 1 Wins\n");
+				*playerOneWins = true;
 				break;
 			}
+
 		}
+		
+		network.BackPropagate();
+		delete playerOneWins;
+		delete playerTwoWins;
 	}
 
 	return 0;
