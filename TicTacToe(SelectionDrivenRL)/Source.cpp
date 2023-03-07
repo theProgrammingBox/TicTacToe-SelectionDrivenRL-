@@ -49,11 +49,11 @@ int main()
 		int col[BOARD_SIZE];
 		int diagonal = 0;
 		int antiDiagonal = 0;
-		int turn = 1;
-		int board[BOARD_SIZE];
+		float turn = 1;
+		float board[BOARD_SIZE];
 		memset(row, 0, sizeof(int) * BOARD_SIZE);
 		memset(col, 0, sizeof(int) * BOARD_SIZE);
-		memset(board, 0, sizeof(int) * BOARD_SIZE);
+		memset(board, 0, sizeof(float) * BOARD_SIZE);
 
 		bool gameRunning = true;
 		while (gameRunning)
@@ -73,8 +73,12 @@ int main()
 				printf("\n");
 			}
 
+			memcpy(inputMatrix, board, sizeof(int) * BOARD_SIZE);
+			inputMatrix[BOARD_SIZE] = turn;
+			PrintMatrix(inputMatrix, 1, INPUT_SIZE, "Input Matrix");
+			
 			uint32_t playerInput;
-			/*printf("Enter position (0 - 8): ");
+			printf("Enter position (0 - 8): ");
 			scanf_s("%d", &playerInput);
 			if (playerInput < 0 || playerInput > 8 || board[playerInput] != 0)
 			{
@@ -88,13 +92,9 @@ int main()
 					printf("Player 1 Wins due to Invalid Input\n");
 				}
 				break;
-			}*/
-			float input[BOARD_SIZE + 1];
-			memcpy(input, board, sizeof(int) * BOARD_SIZE);
-			input[BOARD_SIZE] = turn;
-			
+			}
 			board[playerInput] = turn;
-			turn *= -1;
+			*(int32_t*)&turn ^= 0x80000000;
 
 			uint32_t rowPos = playerInput / BOARD_WIDTH;
 			uint32_t colPos = playerInput % BOARD_WIDTH;
