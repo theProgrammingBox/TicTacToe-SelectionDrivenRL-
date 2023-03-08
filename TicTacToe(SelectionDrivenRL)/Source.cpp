@@ -7,17 +7,15 @@ public:
 	static constexpr uint32_t BOARD_SIZE = BOARD_WIDTH * BOARD_WIDTH;
 
 	// 1x10 input
-	// 10x20 weight
-	// 1x20 product
-	// 1x20 bias
-	// 1x20 leaky activation
-	// 20x30 weight
+	// 10x30 weight
 	// 1x30 product
 	// 1x30 bias
 	// 1x30 leaky activation
-	// 30x9 weight
+	// 30x20 weight
+	// 1x20 product
+	// 1x20 leaky activation
+	// 20x9 weight
 	// 1x9 product
-	// 1x9 bias
 	// 1x9 softmax activation
 	
 	static constexpr uint32_t INPUT_SIZE = BOARD_SIZE + 1;
@@ -33,18 +31,14 @@ public:
 		float weightMatrixOne[WEIGHT_ONE_SIZE];
 		float biasMatrixOne[LEAKY_ONE_SIZE];
 		float weightMatrixTwo[WEIGHT_TWO_SIZE];
-		float biasMatrixTwo[LEAKY_TWO_SIZE];
 		float weightMatrixThree[WEIGHT_THREE_SIZE];
-		float biasMatrixThree[SOFTMAX_SIZE];
 
 		Parameters()
 		{
 			cpuGenerateUniform(weightMatrixOne, WEIGHT_ONE_SIZE, -1.0f, 1.0f);
 			cpuGenerateUniform(weightMatrixTwo, WEIGHT_TWO_SIZE, -1.0f, 1.0f);
 			cpuGenerateUniform(weightMatrixThree, WEIGHT_THREE_SIZE, -1.0f, 1.0f);
-			cpuGenerateUniform(biasMatrixOne, LEAKY_ONE_SIZE, -1.0f, 1.0f);
-			cpuGenerateUniform(biasMatrixTwo, LEAKY_TWO_SIZE, -1.0f, 1.0f);
-			cpuGenerateUniform(biasMatrixThree, SOFTMAX_SIZE, -1.0f, 1.0f);
+			memset(biasMatrixOne, 0, sizeof(float) * LEAKY_ONE_SIZE);
 		}
 	};
 
@@ -88,7 +82,6 @@ public:
 				&GLOBAL::ZEROF,
 				productMatrixTwo, LEAKY_TWO_SIZE, 0,
 				1);
-			cpuSaxpy(LEAKY_TWO_SIZE, &GLOBAL::ONEF, parameters->biasMatrixTwo, 1, productMatrixTwo, 1);
 			cpuLeakyRelu(productMatrixTwo, leakyMatrixTwo, LEAKY_TWO_SIZE);
 			cpuSgemmStridedBatched(
 				false, false,
@@ -99,7 +92,6 @@ public:
 				&GLOBAL::ZEROF,
 				productMatrixThree, SOFTMAX_SIZE, 0,
 				1);
-			cpuSaxpy(SOFTMAX_SIZE, &GLOBAL::ONEF, parameters->biasMatrixThree, 1, productMatrixThree, 1);
 			cpuSoftmax(productMatrixThree, softmaxMatrix, SOFTMAX_SIZE);
 			
 			float randomNumber = GLOBAL::RANDOM.Rfloat();
@@ -121,10 +113,8 @@ public:
 			PrintMatrix(productMatrixOne, 1, LEAKY_ONE_SIZE, "Product Matrix One + Bias");
 			PrintMatrix(leakyMatrixOne, 1, LEAKY_ONE_SIZE, "Leaky Matrix One");
 			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two");
-			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two + Bias");
 			PrintMatrix(leakyMatrixTwo, 1, LEAKY_TWO_SIZE, "Leaky Matrix Two");
 			PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three");
-			PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three + Bias");
 			PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");*/
 			printf("Sampled Action: %d\n", sampledAction);
 			printf("Is Winner: %d\n", *isWinner);
@@ -162,7 +152,7 @@ int main()
 	NeuralNetwork network;
 
 	//for (;;)
-	for (uint32_t i = 1; i--;)
+	for (uint32_t i = 2; i--;)
 	{
 		bool* playerOneWins = new bool(false);
 		bool* playerTwoWins = new bool(false);
