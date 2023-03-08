@@ -79,6 +79,19 @@ void PrintMatrix(float* arr, uint32_t rows, uint32_t cols, const char* label) {
 	printf("\n");
 }
 
+float InvSqrt(float number)
+{
+	long i = 0x5F1FFFF9 - (*(long*)&number >> 1);
+	float tmp = *(float*)&i;
+	return tmp * 0.703952253f * (2.38924456f - number * tmp * tmp);
+}
+
+void cpuClip(float* matrix, uint32_t size, float learningRate, float min = -1, float max = 1)
+{
+	for (uint32_t counter = size; counter--;)
+		matrix[counter] = std::min(std::max(matrix[counter] * learningRate, min), max);
+}
+
 namespace GLOBAL
 {
 	Random RANDOM(Random::MakeSeed());

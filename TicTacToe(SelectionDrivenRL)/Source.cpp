@@ -5,29 +5,34 @@ int main()
 	constexpr uint32_t BOARD_WIDTH = 3;
 	constexpr uint32_t BOARD_SIZE = BOARD_WIDTH * BOARD_WIDTH;
 	NeuralNetwork network;
-
-	//for (;;)
-	for (uint32_t i = 2; i--;)
+	
+	bool* playerOneWins;
+	bool* playerTwoWins;
+	float board[BOARD_SIZE];
+	int row[BOARD_SIZE];
+	int col[BOARD_SIZE];
+	int diagonal;
+	int antiDiagonal;
+	uint32_t numMoves;
+	float turn;
+	
+	for (uint32_t i = 10000; i--;)
 	{
-		bool* playerOneWins = new bool(false);
-		bool* playerTwoWins = new bool(false);
-		
-		printf("\nNew Game of TicTacToe\n");
-		uint32_t numMoves = 0;
-		int row[BOARD_SIZE];
-		int col[BOARD_SIZE];
-		int diagonal = 0;
-		int antiDiagonal = 0;
-		float turn = 1;
-		float board[BOARD_SIZE];
+		playerOneWins = new bool(false);
+		playerTwoWins = new bool(false);
+		memset(board, 0, sizeof(float) * BOARD_SIZE);
 		memset(row, 0, sizeof(int) * BOARD_SIZE);
 		memset(col, 0, sizeof(int) * BOARD_SIZE);
-		memset(board, 0, sizeof(float) * BOARD_SIZE);
+		diagonal = 0;
+		antiDiagonal = 0;
+		numMoves = 0;
+		turn = 1;
 
+		//printf("\nNew Game of TicTacToe\n");
 		bool gameRunning = true;
 		while (gameRunning)
 		{
-			for (uint32_t i = 0; i < BOARD_WIDTH; i++)
+			/*for (uint32_t i = 0; i < BOARD_WIDTH; i++)
 			{
 				for (uint32_t j = 0; j < BOARD_WIDTH; j++)
 				{
@@ -41,10 +46,10 @@ int main()
 				}
 				printf("\n");
 			}
-			printf("\n");
+			printf("\n");*/
 			
 			uint32_t playerInput;
-			if (turn == 1.0f)
+			if (turn == 1)
 			{
 				playerInput = network.ForwardPropagate(board, turn, playerOneWins);
 			}
@@ -104,7 +109,7 @@ int main()
 
 		}
 		
-		network.BackPropagate();
+		network.BackPropagate(0.01f);
 		delete playerOneWins;
 		delete playerTwoWins;
 	}
