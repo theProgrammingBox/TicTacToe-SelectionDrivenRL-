@@ -16,7 +16,7 @@ int main()
 	uint32_t numMoves;
 	float turn;
 	
-	for (uint32_t i = 10000; i--;)
+	for (uint32_t i = 1; i--;)
 	{
 		playerOneWins = new bool(false);
 		playerTwoWins = new bool(false);

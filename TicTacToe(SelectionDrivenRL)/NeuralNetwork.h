@@ -7,22 +7,10 @@ public:
 	static constexpr uint32_t BOARD_WIDTH = 3;
 	static constexpr uint32_t BOARD_SIZE = BOARD_WIDTH * BOARD_WIDTH;
 
-	// 1x10 input
-	// 10x30 weight
-	// 1x30 product
-	// 1x30 bias
-	// 1x30 leaky activation
-	// 30x20 weight
-	// 1x20 product
-	// 1x20 leaky activation
-	// 20x9 weight
-	// 1x9 product
-	// 1x9 softmax activation
-
 	static constexpr uint32_t INPUT_SIZE = BOARD_SIZE + 1;
-	static constexpr uint32_t LEAKY_ONE_SIZE = 30;
+	static constexpr uint32_t LEAKY_ONE_SIZE = 18;
 	static constexpr uint32_t WEIGHT_ONE_SIZE = INPUT_SIZE * LEAKY_ONE_SIZE;
-	static constexpr uint32_t LEAKY_TWO_SIZE = 20;
+	static constexpr uint32_t LEAKY_TWO_SIZE = 18;
 	static constexpr uint32_t WEIGHT_TWO_SIZE = LEAKY_ONE_SIZE * LEAKY_TWO_SIZE;
 	static constexpr uint32_t SOFTMAX_SIZE = 9;
 	static constexpr uint32_t WEIGHT_THREE_SIZE = LEAKY_TWO_SIZE * SOFTMAX_SIZE;
@@ -41,9 +29,15 @@ public:
 
 		Parameters()
 		{
-			cpuGenerateUniform(weightMatrixOne, WEIGHT_ONE_SIZE, -sqrt(6.0f / (INPUT_SIZE + LEAKY_ONE_SIZE)), sqrt(6.0f / (INPUT_SIZE + LEAKY_ONE_SIZE)));
+			/*cpuGenerateUniform(weightMatrixOne, WEIGHT_ONE_SIZE, -sqrt(6.0f / (INPUT_SIZE + LEAKY_ONE_SIZE)), sqrt(6.0f / (INPUT_SIZE + LEAKY_ONE_SIZE)));
 			cpuGenerateUniform(weightMatrixTwo, WEIGHT_TWO_SIZE, -sqrt(6.0f / (LEAKY_ONE_SIZE + LEAKY_TWO_SIZE)), sqrt(6.0f / (LEAKY_ONE_SIZE + LEAKY_TWO_SIZE)));
-			cpuGenerateUniform(weightMatrixThree, WEIGHT_THREE_SIZE, -sqrt(6.0f / (LEAKY_TWO_SIZE + SOFTMAX_SIZE)), sqrt(6.0f / (LEAKY_TWO_SIZE + SOFTMAX_SIZE)));
+			cpuGenerateUniform(weightMatrixThree, WEIGHT_THREE_SIZE, -sqrt(6.0f / (LEAKY_TWO_SIZE + SOFTMAX_SIZE)), sqrt(6.0f / (LEAKY_TWO_SIZE + SOFTMAX_SIZE)));*/
+			/*cpuGenerateUniform(weightMatrixOne, WEIGHT_ONE_SIZE, -0.01f, 0.01f);
+			cpuGenerateUniform(weightMatrixTwo, WEIGHT_TWO_SIZE, -0.01f, 0.01f);
+			cpuGenerateUniform(weightMatrixThree, WEIGHT_THREE_SIZE, -0.01f, 0.01f);*/
+			cpuGenerateUniform(weightMatrixOne, WEIGHT_ONE_SIZE, -1.0f, 1.0f);
+			cpuGenerateUniform(weightMatrixTwo, WEIGHT_TWO_SIZE, -1.0f, 1.0f);
+			cpuGenerateUniform(weightMatrixThree, WEIGHT_THREE_SIZE, -1.0f, 1.0f);
 			memset(biasMatrixOne, 0, sizeof(float) * LEAKY_ONE_SIZE);
 			
 			memset(weightMatrixThreeDerivative, 0, sizeof(float) * WEIGHT_THREE_SIZE);
@@ -217,7 +211,9 @@ public:
 			PrintMatrix(parameters->weightMatrixTwoDerivative, LEAKY_TWO_SIZE, LEAKY_ONE_SIZE, "Weight Matrix Two Derivative");
 			PrintMatrix(parameters->weightMatrixThreeDerivative, SOFTMAX_SIZE, LEAKY_TWO_SIZE, "Weight Matrix Three Derivative");*/
 			PrintMatrix(inputMatrix, 1, INPUT_SIZE, "Input Matrix");
-			PrintMatrix(parameters->weightMatrixThree, SOFTMAX_SIZE, LEAKY_TWO_SIZE, "Weight Matrix Three");
+			PrintMatrix(parameters->weightMatrixOne, INPUT_SIZE, LEAKY_ONE_SIZE, "Weight Matrix One");
+			PrintMatrix(parameters->biasMatrixOne, 1, LEAKY_ONE_SIZE, "Bias Matrix One");
+			PrintMatrix(productMatrixOne, 1, LEAKY_ONE_SIZE, "Product Matrix One");
 		}
 	};
 
@@ -233,10 +229,10 @@ public:
 
 	void BackPropagate(float learningRate)
 	{
+		computations.back()->Print();
 		for (auto computation : computations)
 		{
 			computation->BackPropagate();
-			computation->Print();
 			delete computation;
 		}
 		computations.clear();
