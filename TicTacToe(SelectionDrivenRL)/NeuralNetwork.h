@@ -85,6 +85,7 @@ public:
 
 			memcpy(inputMatrix, board, sizeof(int) * BOARD_SIZE);
 			inputMatrix[BOARD_SIZE] = turn;
+			PrintMatrix(inputMatrix, 1, INPUT_SIZE, "inputMatrix");
 			cpuSgemmStridedBatched(
 				false, false,
 				LEAKY_ONE_SIZE, 1, INPUT_SIZE,
@@ -94,7 +95,8 @@ public:
 				&GLOBAL::ZEROF,
 				productMatrixOne, LEAKY_ONE_SIZE, 0,
 				1);
-			cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, parameters->biasMatrixOne, 1, productMatrixOne, 1);
+			PrintMatrix(productMatrixOne, 1, LEAKY_ONE_SIZE, "productMatrixOne");
+			//cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, parameters->biasMatrixOne, 1, productMatrixOne, 1);
 			cpuLeakyRelu(productMatrixOne, leakyMatrixOne, LEAKY_ONE_SIZE);
 			cpuSgemmStridedBatched(
 				false, false,
