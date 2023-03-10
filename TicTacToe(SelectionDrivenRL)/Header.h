@@ -50,9 +50,12 @@ void cpuLeakyReluDerivative(float* input, float* gradient, float* output, uint32
 void cpuSoftmax(float* input, float* output, uint32_t size)
 {
 	float sum = 0;
+	float max = input[0];
+	for (uint32_t counter = size; counter--;)
+		max = std::max(max, input[counter]);
 	for (uint32_t counter = size; counter--;)
 	{
-		output[counter] = std::exp(input[counter]);
+		output[counter] = std::exp(input[counter] - max);
 		sum += output[counter];
 	}
 	sum = 1.0f / sum;

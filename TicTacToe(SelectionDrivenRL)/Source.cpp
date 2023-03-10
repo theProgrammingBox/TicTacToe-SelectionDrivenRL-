@@ -5,6 +5,7 @@ int main()
 	constexpr uint32_t BOARD_WIDTH = 3;
 	constexpr uint32_t BOARD_SIZE = BOARD_WIDTH * BOARD_WIDTH;
 	NeuralNetwork network;
+	//network.Print();
 	
 	bool* playerOneWins;
 	bool* playerTwoWins;
@@ -16,8 +17,12 @@ int main()
 	uint32_t numMoves;
 	float turn;
 	
-	for (uint32_t i = 1; i--;)
+	for (uint32_t i = 10000; i--;)
 	{
+		//network.Print();
+		int playerInput = 0;
+		std::cin.get();
+		
 		playerOneWins = new bool(false);
 		playerTwoWins = new bool(false);
 		memset(board, 0, sizeof(float) * BOARD_SIZE);
