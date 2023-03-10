@@ -210,6 +210,7 @@ public:
 			memset(productMatrixOneDerivative, 0, sizeof(float) * LEAKY_ONE_SIZE);
 			
 			cpuSoftmaxDerivative(productMatrixThree, productMatrixThreeDerivative, *isWinner, sampledAction, SOFTMAX_SIZE);
+			PrintMatrix(productMatrixThreeDerivative, SOFTMAX_SIZE, 1, "productMatrixThreeDerivative");
 			cpuSgemmStridedBatched(
 				false, true,
 				SOFTMAX_SIZE, LEAKY_TWO_SIZE, 1,
@@ -228,6 +229,7 @@ public:
 				&GLOBAL::ONEF,
 				leakyMatrixTwoDerivative, LEAKY_TWO_SIZE, 0,
 				1);
+			//PrintMatrix(leakyMatrixTwoDerivative, LEAKY_TWO_SIZE, 1, "leakyMatrixTwoDerivative");
 			cpuLeakyReluDerivative(leakyMatrixTwo, leakyMatrixTwoDerivative, productMatrixTwoDerivative, LEAKY_TWO_SIZE);
 			cpuSgemmStridedBatched(
 				false, true,
@@ -247,6 +249,7 @@ public:
 				&GLOBAL::ONEF,
 				leakyMatrixOneDerivative, LEAKY_ONE_SIZE, 0,
 				1);
+			//PrintMatrix(leakyMatrixOneDerivative, LEAKY_ONE_SIZE, 1, "leakyMatrixOneDerivative");
 			cpuLeakyReluDerivative(leakyMatrixOne, leakyMatrixOneDerivative, productMatrixOneDerivative, LEAKY_ONE_SIZE);
 			cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, productMatrixOneDerivative, 1, parameters->biasMatrixOneDerivative, 1);
 			cpuSgemmStridedBatched(
@@ -262,7 +265,7 @@ public:
 
 		void Print()
 		{
-			PrintMatrix(inputMatrix, 1, INPUT_SIZE, "Input Matrix");
+			/*PrintMatrix(inputMatrix, 1, INPUT_SIZE, "Input Matrix");
 			PrintMatrix(parameters->weightMatrixOne, INPUT_SIZE, LEAKY_ONE_SIZE, "Weight Matrix One");
 			PrintMatrix(parameters->weightMatrixOneDerivative, INPUT_SIZE, LEAKY_ONE_SIZE, "Weight Matrix One Derivative");
 			PrintMatrix(parameters->biasMatrixOne, 1, LEAKY_ONE_SIZE, "Bias Matrix One");
@@ -274,11 +277,11 @@ public:
 			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two");
 			PrintMatrix(leakyMatrixTwo, 1, LEAKY_TWO_SIZE, "Leaky Matrix Two");
 			PrintMatrix(parameters->weightMatrixThree, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three");
-			PrintMatrix(parameters->weightMatrixThreeDerivative, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three Derivative");
+			PrintMatrix(parameters->weightMatrixThreeDerivative, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three Derivative");*/
 			PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three");
-			PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");
+			/*PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");
 			printf("Sampled Action: %d\n", sampledAction);
-			printf("Is Winner: %d\n", *isWinner);
+			printf("Is Winner: %d\n", *isWinner);*/
 		}
 	};
 
@@ -296,8 +299,6 @@ public:
 		delete[] parameters.biasMatrixOneDerivative;
 		delete[] parameters.weightMatrixTwoDerivative;
 		delete[] parameters.weightMatrixThreeDerivative;
-		
-
 	}
 
 	uint32_t ForwardPropagate(float* board, float turn, bool* isWinner)
@@ -312,7 +313,11 @@ public:
 		for (auto computation : computations)
 		{
 			computation->BackPropagate();
-			
+		}
+		computations.back()->Print();
+		parameters.Update(learningRate * InvSqrt(computations.size()));
+		for (auto computation : computations)
+		{
 			delete[] computation->inputMatrix;
 			delete[] computation->productMatrixOne;
 			delete[] computation->leakyMatrixOne;
@@ -322,8 +327,6 @@ public:
 			delete[] computation->softmaxMatrix;
 			delete computation;
 		}
-		//computations.back()->Print();
-		parameters.Update(learningRate * InvSqrt(computations.size()));
 		computations.clear();
 	}
 
