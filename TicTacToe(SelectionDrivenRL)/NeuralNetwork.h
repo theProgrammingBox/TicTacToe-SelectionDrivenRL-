@@ -176,7 +176,7 @@ public:
 			return sampledAction;
 		}
 
-		void BackPropagate()
+		void BackPropagate(float learningRate)
 		{
 			float productMatrixThreeDerivative[SOFTMAX_SIZE];
 			float leakyMatrixTwoDerivative[LEAKY_TWO_SIZE];
@@ -190,7 +190,7 @@ public:
 			memset(leakyMatrixOneDerivative, 0, sizeof(float) * LEAKY_ONE_SIZE);
 			memset(productMatrixOneDerivative, 0, sizeof(float) * LEAKY_ONE_SIZE);
 			
-			cpuSoftmaxDerivative(softmaxMatrix, productMatrixThreeDerivative, *isWinner, sampledAction, SOFTMAX_SIZE);
+			cpuSoftmaxDerivative(softmaxMatrix, productMatrixThreeDerivative, *isWinner, sampledAction, SOFTMAX_SIZE, learningRate);
 			cpuSgemmStridedBatched(
 				false, true,
 				SOFTMAX_SIZE, LEAKY_TWO_SIZE, 1,
@@ -288,10 +288,15 @@ public:
 
 	void BackPropagate(float learningRate)
 	{
-		for (auto computation : computations)
+		float lr = 1.0f;
+		bool t = true;
+		for (uint32_t i = computations.size(); i--;)
 		{
-			if (*(computation->isWinner) == false)
-				computation->BackPropagate();
+			if (*(computations[i]->isWinner) == false)
+				computations[i]->BackPropagate(lr);
+			t ^= 1;
+			if (t)
+				lr *= 0.9f;
 		}
 		parameters.Update(learningRate * InvSqrt(computations.size()));
 		for (auto computation : computations)

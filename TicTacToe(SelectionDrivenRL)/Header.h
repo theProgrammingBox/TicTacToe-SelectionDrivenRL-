@@ -74,12 +74,12 @@ void cpuSoftmax(float* input, float* output, uint32_t size)
 		output[counter] *= sum;
 }
 
-void cpuSoftmaxDerivative(float* inputOutput, float* output, bool endState, uint32_t action, uint32_t size)
+void cpuSoftmaxDerivative(float* inputOutput, float* output, bool endState, uint32_t action, uint32_t size, float learningRate)
 {
 	float sampledProbability = inputOutput[action];
-	float gradient = -1.0f;// (endState - sampledProbability);
+	float gradient = (endState << 1) - 1.0f;// -1.0f;// (endState - sampledProbability);
 	for (uint32_t counter = size; counter--;)
-		output[counter] = gradient * inputOutput[counter] * ((counter == action) - sampledProbability);
+		output[counter] = gradient * inputOutput[counter] * ((counter == action) - sampledProbability) * learningRate;
 }
 
 float InvSqrt(float number)
