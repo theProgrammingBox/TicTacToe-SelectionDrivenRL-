@@ -5,7 +5,6 @@ int main()
 	constexpr uint32_t BOARD_WIDTH = 3;
 	constexpr uint32_t BOARD_SIZE = BOARD_WIDTH * BOARD_WIDTH;
 	NeuralNetwork network;
-	//network.Print();
 	
 	bool* playerOneWins;
 	bool* playerTwoWins;
@@ -20,8 +19,8 @@ int main()
 	for (uint32_t i = 10000; i--;)
 	{
 		//network.Print();
-		int playerInput = 0;
-		std::cin.get();
+		/*int playerInput = 0;
+		std::cin.get();*/
 		
 		playerOneWins = new bool(false);
 		playerTwoWins = new bool(false);
@@ -61,6 +60,14 @@ int main()
 			else
 			{
 				playerInput = network.ForwardPropagate(board, turn, playerTwoWins);
+			}
+
+			if (playerInput != 4)
+			{
+				gameRunning = false;
+				printf("Player 1 Wins due to not 4\n");
+				*playerOneWins = true;
+				break;
 			}
 			
 			if (board[playerInput] != 0)
