@@ -22,7 +22,7 @@ int main()
 	uint32_t player2Win = 0;
 	uint32_t draw = 0;
 	
-	for (uint32_t i = 100000000; i--;)
+	for (uint32_t i = 1000000000; i--;)
 	{
 		playerOneWins = new bool(false);
 		playerTwoWins = new bool(false);
@@ -35,7 +35,7 @@ int main()
 		turn = 1;
 		gameRunning = true;
 
-		if (i % 500000 == 0)
+		if (i % 100000 == 0)
 		{
 			printf("\nStats:\n");
 			printf("Player 1 Win By Invalid Move: %d\n", player1WinByInvalidMove);
@@ -55,7 +55,7 @@ int main()
 		while (gameRunning)
 		{
 
-			if (i % 500000 == 0)
+			if (i % 100000 == 0)
 			{
 				for (uint32_t i = 0; i < BOARD_WIDTH; i++)
 				{
@@ -117,8 +117,6 @@ int main()
 				gameRunning = false;
 				//printf("Draw\n");
 				draw++;
-				*playerOneWins = false;
-				*playerTwoWins = false;
 				break;
 			}
 			else if (row[rowPos] == BOARD_WIDTH || col[colPos] == BOARD_WIDTH || diagonal == BOARD_WIDTH || antiDiagonal == BOARD_WIDTH)
