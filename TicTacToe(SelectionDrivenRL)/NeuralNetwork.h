@@ -209,8 +209,8 @@ public:
 			memset(leakyMatrixOneDerivative, 0, sizeof(float) * LEAKY_ONE_SIZE);
 			memset(productMatrixOneDerivative, 0, sizeof(float) * LEAKY_ONE_SIZE);
 			
-			cpuSoftmaxDerivative(productMatrixThree, productMatrixThreeDerivative, *isWinner, sampledAction, SOFTMAX_SIZE);
-			PrintMatrix(productMatrixThreeDerivative, SOFTMAX_SIZE, 1, "productMatrixThreeDerivative");
+			cpuSoftmaxDerivative(softmaxMatrix, productMatrixThreeDerivative, *isWinner, sampledAction, SOFTMAX_SIZE);
+			//PrintMatrix(productMatrixThreeDerivative, SOFTMAX_SIZE, 1, "productMatrixThreeDerivative");
 			cpuSgemmStridedBatched(
 				false, true,
 				SOFTMAX_SIZE, LEAKY_TWO_SIZE, 1,
@@ -265,7 +265,7 @@ public:
 
 		void Print()
 		{
-			/*PrintMatrix(inputMatrix, 1, INPUT_SIZE, "Input Matrix");
+			PrintMatrix(inputMatrix, 1, INPUT_SIZE, "Input Matrix");
 			PrintMatrix(parameters->weightMatrixOne, INPUT_SIZE, LEAKY_ONE_SIZE, "Weight Matrix One");
 			PrintMatrix(parameters->weightMatrixOneDerivative, INPUT_SIZE, LEAKY_ONE_SIZE, "Weight Matrix One Derivative");
 			PrintMatrix(parameters->biasMatrixOne, 1, LEAKY_ONE_SIZE, "Bias Matrix One");
@@ -277,11 +277,11 @@ public:
 			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two");
 			PrintMatrix(leakyMatrixTwo, 1, LEAKY_TWO_SIZE, "Leaky Matrix Two");
 			PrintMatrix(parameters->weightMatrixThree, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three");
-			PrintMatrix(parameters->weightMatrixThreeDerivative, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three Derivative");*/
+			PrintMatrix(parameters->weightMatrixThreeDerivative, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three Derivative");
 			PrintMatrix(productMatrixThree, 1, SOFTMAX_SIZE, "Product Matrix Three");
-			/*PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");
+			PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");
 			printf("Sampled Action: %d\n", sampledAction);
-			printf("Is Winner: %d\n", *isWinner);*/
+			printf("Is Winner: %d\n", *isWinner);
 		}
 	};
 
@@ -314,7 +314,7 @@ public:
 		{
 			computation->BackPropagate();
 		}
-		computations.back()->Print();
+		//computations.back()->Print();
 		parameters.Update(learningRate * InvSqrt(computations.size()));
 		for (auto computation : computations)
 		{
