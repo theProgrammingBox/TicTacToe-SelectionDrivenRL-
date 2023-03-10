@@ -16,8 +16,13 @@ int main()
 	uint32_t numMoves;
 	float turn;
 	bool gameRunning;
+	uint32_t player1WinByInvalidMove = 0;
+	uint32_t player2WinByInvalidMove = 0;
+	uint32_t player1Win = 0;
+	uint32_t player2Win = 0;
+	uint32_t draw = 0;
 	
-	for (uint32_t i = 1; i--;)
+	for (uint32_t i = 100000000; i--;)
 	{
 		playerOneWins = new bool(false);
 		playerTwoWins = new bool(false);
@@ -30,12 +35,27 @@ int main()
 		turn = 1;
 		gameRunning = true;
 
-		if (i % 10 == 0)
-			printf("\nNew Game of TicTacToe\n");
+		if (i % 500000 == 0)
+		{
+			printf("\nStats:\n");
+			printf("Player 1 Win By Invalid Move: %d\n", player1WinByInvalidMove);
+			printf("Player 2 Win By Invalid Move: %d\n", player2WinByInvalidMove);
+			printf("Player 1 Win: %d\n", player1Win);
+			printf("Player 2 Win: %d\n", player2Win);
+			printf("Draw: %d\n", draw);
+			
+			player1WinByInvalidMove = 0;
+			player2WinByInvalidMove = 0;
+			player1Win = 0;
+			player2Win = 0;
+			draw = 0;
+			
+			printf("New Game of TicTacToe\n");
+		}
 		while (gameRunning)
 		{
 
-			if (i % 10 == 0)
+			if (i % 500000 == 0)
 			{
 				for (uint32_t i = 0; i < BOARD_WIDTH; i++)
 				{
@@ -70,11 +90,13 @@ int main()
 				if (turn == 1)
 				{
 					//printf("Player 2 Wins due to Invalid Input\n");
+					player2WinByInvalidMove++;
 					*playerTwoWins = true;
 				}
 				else
 				{
 					//printf("Player 1 Wins due to Invalid Input\n");
+					player1WinByInvalidMove++;
 					*playerOneWins = true;
 				}
 				break;
@@ -94,6 +116,7 @@ int main()
 			{
 				gameRunning = false;
 				//printf("Draw\n");
+				draw++;
 				*playerOneWins = false;
 				*playerTwoWins = false;
 				break;
@@ -102,6 +125,7 @@ int main()
 			{
 				gameRunning = false;
 				//printf("Player 2 Wins\n");
+				player2Win++;
 				*playerTwoWins = true;
 				break;
 			}
@@ -109,12 +133,13 @@ int main()
 			{
 				gameRunning = false;
 				//printf("Player 1 Wins\n");
+				player1Win++;
 				*playerOneWins = true;
 				break;
 			}
 		}
 		
-		network.BackPropagate(0.1f);
+		network.BackPropagate(1.0f);
 		delete playerOneWins;
 		delete playerTwoWins;
 	}

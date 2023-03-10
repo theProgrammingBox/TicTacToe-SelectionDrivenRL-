@@ -17,16 +17,6 @@ public:
 
 	struct Parameters
 	{
-		/*float weightMatrixOne[WEIGHT_ONE_SIZE];
-		float biasMatrixOne[LEAKY_ONE_SIZE];
-		float weightMatrixTwo[WEIGHT_TWO_SIZE];
-		float weightMatrixThree[WEIGHT_THREE_SIZE];
-
-		float weightMatrixThreeDerivative[WEIGHT_THREE_SIZE];
-		float weightMatrixTwoDerivative[WEIGHT_TWO_SIZE];
-		float biasMatrixOneDerivative[LEAKY_ONE_SIZE];
-		float weightMatrixOneDerivative[WEIGHT_ONE_SIZE];*/
-		
 		float* weightMatrixOne;
 		float* biasMatrixOne;
 		float* weightMatrixTwo;
@@ -67,7 +57,7 @@ public:
 
 		void Update(float learningRate)
 		{
-			cpuClip(weightMatrixThreeDerivative, WEIGHT_THREE_SIZE, learningRate, -0.01f, 0.01f);
+			/*cpuClip(weightMatrixThreeDerivative, WEIGHT_THREE_SIZE, learningRate, -0.01f, 0.01f);
 			cpuClip(weightMatrixTwoDerivative, WEIGHT_TWO_SIZE, learningRate, -0.01f, 0.01f);
 			cpuClip(biasMatrixOneDerivative, LEAKY_ONE_SIZE, learningRate, -0.01f, 0.01f);
 			cpuClip(weightMatrixOneDerivative, WEIGHT_ONE_SIZE, learningRate, -0.01f, 0.01f);
@@ -75,27 +65,12 @@ public:
 			cpuSaxpy(WEIGHT_THREE_SIZE, &GLOBAL::ONEF, weightMatrixThreeDerivative, 1, weightMatrixThree, 1);
 			cpuSaxpy(WEIGHT_TWO_SIZE, &GLOBAL::ONEF, weightMatrixTwoDerivative, 1, weightMatrixTwo, 1);
 			cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, biasMatrixOneDerivative, 1, biasMatrixOne, 1);
-			cpuSaxpy(WEIGHT_ONE_SIZE, &GLOBAL::ONEF, weightMatrixOneDerivative, 1, weightMatrixOne, 1);
-			
-			/*PrintMatrix(weightMatrixThree, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three");
-			PrintMatrix(weightMatrixTwo, LEAKY_ONE_SIZE, LEAKY_TWO_SIZE, "Weight Matrix Two");
-			PrintMatrix(biasMatrixOne, 1, LEAKY_ONE_SIZE, "Bias Matrix One");
-			PrintMatrix(weightMatrixOne, INPUT_SIZE, LEAKY_ONE_SIZE, "Weight Matrix One");*/
+			cpuSaxpy(WEIGHT_ONE_SIZE, &GLOBAL::ONEF, weightMatrixOneDerivative, 1, weightMatrixOne, 1);*/
 
-			/*cpuSaxpy(WEIGHT_THREE_SIZE, &learningRate, weightMatrixThreeDerivative, 1, weightMatrixThree, 1);
+			cpuSaxpy(WEIGHT_THREE_SIZE, &learningRate, weightMatrixThreeDerivative, 1, weightMatrixThree, 1);
 			cpuSaxpy(WEIGHT_TWO_SIZE, &learningRate, weightMatrixTwoDerivative, 1, weightMatrixTwo, 1);
 			cpuSaxpy(LEAKY_ONE_SIZE, &learningRate, biasMatrixOneDerivative, 1, biasMatrixOne, 1);
-			cpuSaxpy(WEIGHT_ONE_SIZE, &learningRate, weightMatrixOneDerivative, 1, weightMatrixOne, 1);*/
-
-			/*PrintMatrix(weightMatrixThreeDerivative, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three Derivative");
-			PrintMatrix(weightMatrixTwoDerivative, LEAKY_ONE_SIZE, LEAKY_TWO_SIZE, "Weight Matrix Two Derivative");
-			PrintMatrix(biasMatrixOneDerivative, 1, LEAKY_ONE_SIZE, "Bias Matrix One Derivative");
-			PrintMatrix(weightMatrixOneDerivative, INPUT_SIZE, LEAKY_ONE_SIZE, "Weight Matrix One Derivative");*/
-
-			/*PrintMatrix(weightMatrixThree, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three");
-			PrintMatrix(weightMatrixTwo, LEAKY_ONE_SIZE, LEAKY_TWO_SIZE, "Weight Matrix Two");
-			PrintMatrix(biasMatrixOne, 1, LEAKY_ONE_SIZE, "Bias Matrix One");
-			PrintMatrix(weightMatrixOne, INPUT_SIZE, LEAKY_ONE_SIZE, "Weight Matrix One");*/
+			cpuSaxpy(WEIGHT_ONE_SIZE, &learningRate, weightMatrixOneDerivative, 1, weightMatrixOne, 1);
 			
 			memset(weightMatrixThreeDerivative, 0, sizeof(float) * WEIGHT_THREE_SIZE);
 			memset(weightMatrixTwoDerivative, 0, sizeof(float) * WEIGHT_TWO_SIZE);
@@ -119,13 +94,6 @@ public:
 	struct Computation
 	{
 		Parameters* parameters;
-		/*float inputMatrix[INPUT_SIZE];
-		float productMatrixOne[LEAKY_ONE_SIZE];
-		float leakyMatrixOne[LEAKY_ONE_SIZE];
-		float productMatrixTwo[LEAKY_TWO_SIZE];
-		float leakyMatrixTwo[LEAKY_TWO_SIZE];
-		float productMatrixThree[SOFTMAX_SIZE];
-		float softmaxMatrix[SOFTMAX_SIZE];*/
 
 		float* inputMatrix;
 		float* productMatrixOne;
@@ -140,19 +108,27 @@ public:
 
 		Computation()
 		{
-			inputMatrix = (float*)malloc(sizeof(float) * INPUT_SIZE);
-			productMatrixOne = (float*)malloc(sizeof(float) * LEAKY_ONE_SIZE);
-			leakyMatrixOne = (float*)malloc(sizeof(float) * LEAKY_ONE_SIZE);
-			productMatrixTwo = (float*)malloc(sizeof(float) * LEAKY_TWO_SIZE);
-			leakyMatrixTwo = (float*)malloc(sizeof(float) * LEAKY_TWO_SIZE);
-			productMatrixThree = (float*)malloc(sizeof(float) * SOFTMAX_SIZE);
-			softmaxMatrix = (float*)malloc(sizeof(float) * SOFTMAX_SIZE);
+			inputMatrix = new float[INPUT_SIZE];
+			productMatrixOne = new float[LEAKY_ONE_SIZE];
+			leakyMatrixOne = new float[LEAKY_ONE_SIZE];
+			productMatrixTwo = new float[LEAKY_TWO_SIZE];
+			leakyMatrixTwo = new float[LEAKY_TWO_SIZE];
+			productMatrixThree = new float[SOFTMAX_SIZE];
+			softmaxMatrix = new float[SOFTMAX_SIZE];
 		}
 
 		uint32_t ForwardPropagate(Parameters* parameters, float* board, float turn, bool* isWinner)
 		{
 			this->parameters = parameters;
 			this->isWinner = isWinner;
+
+			memset(inputMatrix, 0, sizeof(float) * INPUT_SIZE);
+			memset(productMatrixOne, 0, sizeof(float) * LEAKY_ONE_SIZE);
+			memset(leakyMatrixOne, 0, sizeof(float) * LEAKY_ONE_SIZE);
+			memset(productMatrixTwo, 0, sizeof(float) * LEAKY_TWO_SIZE);
+			memset(leakyMatrixTwo, 0, sizeof(float) * LEAKY_TWO_SIZE);
+			memset(productMatrixThree, 0, sizeof(float) * SOFTMAX_SIZE);
+			memset(softmaxMatrix, 0, sizeof(float) * SOFTMAX_SIZE);
 
 			memcpy(inputMatrix, board, sizeof(int) * BOARD_SIZE);
 			inputMatrix[BOARD_SIZE] = turn;
@@ -167,7 +143,6 @@ public:
 				1);
 			cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, parameters->biasMatrixOne, 1, productMatrixOne, 1);
 			cpuLeakyRelu(productMatrixOne, leakyMatrixOne, LEAKY_ONE_SIZE);
-			PrintMatrix(leakyMatrixOne, 1, LEAKY_ONE_SIZE, "Leaky Matrix One");
 			cpuSgemmStridedBatched(
 				false, false,
 				LEAKY_TWO_SIZE, 1, LEAKY_ONE_SIZE,
@@ -177,10 +152,7 @@ public:
 				&GLOBAL::ZEROF,
 				productMatrixTwo, LEAKY_TWO_SIZE, 0,
 				1);
-			PrintMatrix(parameters->weightMatrixTwo, LEAKY_ONE_SIZE, LEAKY_TWO_SIZE, "Weight Matrix Two");
-			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two");
 			cpuLeakyRelu(productMatrixTwo, leakyMatrixTwo, LEAKY_TWO_SIZE);
-			PrintMatrix(leakyMatrixTwo, 1, LEAKY_TWO_SIZE, "Leaky Matrix Two");
 			cpuSgemmStridedBatched(
 				false, false,
 				SOFTMAX_SIZE, 1, LEAKY_TWO_SIZE,
@@ -191,7 +163,6 @@ public:
 				productMatrixThree, SOFTMAX_SIZE, 0,
 				1);
 			cpuSoftmax(productMatrixThree, softmaxMatrix, SOFTMAX_SIZE);
-			PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");
 
 			float randomNumber = GLOBAL::RANDOM.Rfloat();
 			sampledAction = 0;
@@ -220,7 +191,6 @@ public:
 			memset(productMatrixOneDerivative, 0, sizeof(float) * LEAKY_ONE_SIZE);
 			
 			cpuSoftmaxDerivative(softmaxMatrix, productMatrixThreeDerivative, *isWinner, sampledAction, SOFTMAX_SIZE);
-			//PrintMatrix(productMatrixThreeDerivative, SOFTMAX_SIZE, 1, "productMatrixThreeDerivative");
 			cpuSgemmStridedBatched(
 				false, true,
 				SOFTMAX_SIZE, LEAKY_TWO_SIZE, 1,
@@ -239,7 +209,6 @@ public:
 				&GLOBAL::ONEF,
 				leakyMatrixTwoDerivative, LEAKY_TWO_SIZE, 0,
 				1);
-			//PrintMatrix(leakyMatrixTwoDerivative, LEAKY_TWO_SIZE, 1, "leakyMatrixTwoDerivative");
 			cpuLeakyReluDerivative(leakyMatrixTwo, leakyMatrixTwoDerivative, productMatrixTwoDerivative, LEAKY_TWO_SIZE);
 			cpuSgemmStridedBatched(
 				false, true,
@@ -259,7 +228,6 @@ public:
 				&GLOBAL::ONEF,
 				leakyMatrixOneDerivative, LEAKY_ONE_SIZE, 0,
 				1);
-			//PrintMatrix(leakyMatrixOneDerivative, LEAKY_ONE_SIZE, 1, "leakyMatrixOneDerivative");
 			cpuLeakyReluDerivative(leakyMatrixOne, leakyMatrixOneDerivative, productMatrixOneDerivative, LEAKY_ONE_SIZE);
 			cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, productMatrixOneDerivative, 1, parameters->biasMatrixOneDerivative, 1);
 			cpuSgemmStridedBatched(
@@ -327,7 +295,6 @@ public:
 				computation->BackPropagate();
 			}
 		}
-		//computations.back()->Print();
 		parameters.Update(learningRate * InvSqrt(computations.size()));
 		for (auto computation : computations)
 		{

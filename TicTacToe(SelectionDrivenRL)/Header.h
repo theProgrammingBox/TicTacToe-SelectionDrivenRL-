@@ -32,21 +32,12 @@ void cpuSgemmStridedBatched(
 				float sum = 0;
 				for (int k = AColsBRows; k--;)
 					sum += (transA ? A[k * ColsA + n] : A[n * ColsA + k]) * (transB ? B[m * ColsB + k] : B[k * ColsB + m]);
-				if (m == 12 && n == 0)
-				{
-					printf("sum 12: %f\n", sum);
-					printf("C[n * ColsC + m]: %f\n", C[n * ColsC + m]);
-					printf("alpha: %f\n", *alpha);
-					printf("beta: %f\n", *beta);
-					printf("*beta * C[n * ColsC + m]: %f\n", *beta * C[n * ColsC + m]);
-				}
 				C[n * ColsC + m] = *alpha * sum + *beta * C[n * ColsC + m];
 			}
 		A += SizeA;
 		B += SizeB;
 		C += SizeC;
 	}
-	PrintMatrix(C, CRows, CCols, "C");
 }
 
 void cpuSaxpy(int N, const float* alpha, const float* X, int incX, float* Y, int incY)
