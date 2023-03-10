@@ -3,6 +3,17 @@
 #include <iostream>
 #include <vector>
 
+void PrintMatrix(float* arr, uint32_t rows, uint32_t cols, const char* label) {
+	printf("%s:\n", label);
+	for (uint32_t i = 0; i < rows; i++)
+	{
+		for (uint32_t j = 0; j < cols; j++)
+			printf("%8.3f ", arr[i * cols + j]);
+		printf("\n");
+	}
+	printf("\n");
+}
+
 void cpuSgemmStridedBatched(
 	bool transB, bool transA,
 	int CCols, int CRows, int AColsBRows,
@@ -21,12 +32,21 @@ void cpuSgemmStridedBatched(
 				float sum = 0;
 				for (int k = AColsBRows; k--;)
 					sum += (transA ? A[k * ColsA + n] : A[n * ColsA + k]) * (transB ? B[m * ColsB + k] : B[k * ColsB + m]);
+				if (m == 12 && n == 0)
+				{
+					printf("sum 12: %f\n", sum);
+					printf("C[n * ColsC + m]: %f\n", C[n * ColsC + m]);
+					printf("alpha: %f\n", *alpha);
+					printf("beta: %f\n", *beta);
+					printf("*beta * C[n * ColsC + m]: %f\n", *beta * C[n * ColsC + m]);
+				}
 				C[n * ColsC + m] = *alpha * sum + *beta * C[n * ColsC + m];
 			}
 		A += SizeA;
 		B += SizeB;
 		C += SizeC;
 	}
+	PrintMatrix(C, CRows, CCols, "C");
 }
 
 void cpuSaxpy(int N, const float* alpha, const float* X, int incX, float* Y, int incY)
@@ -66,17 +86,6 @@ void cpuSoftmaxDerivative(float* inputOutput, float* output, bool endState, uint
 	float gradient = (endState - sampledProbability);
 	for (uint32_t counter = size; counter--;)
 		output[counter] = gradient * inputOutput[counter] * ((counter == action) - sampledProbability);
-}
-
-void PrintMatrix(float* arr, uint32_t rows, uint32_t cols, const char* label) {
-	printf("%s:\n", label);
-	for (uint32_t i = 0; i < rows; i++)
-	{
-		for (uint32_t j = 0; j < cols; j++)
-			printf("%8.3f ", arr[i * cols + j]);
-		printf("\n");
-	}
-	printf("\n");
 }
 
 float InvSqrt(float number)
