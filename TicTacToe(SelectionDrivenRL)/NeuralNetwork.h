@@ -8,9 +8,9 @@ public:
 	static constexpr uint32_t BOARD_SIZE = BOARD_WIDTH * BOARD_WIDTH;
 
 	static constexpr uint32_t INPUT_SIZE = BOARD_SIZE + 1;
-	static constexpr uint32_t LEAKY_ONE_SIZE = 3;
+	static constexpr uint32_t LEAKY_ONE_SIZE = 30;
 	static constexpr uint32_t WEIGHT_ONE_SIZE = INPUT_SIZE * LEAKY_ONE_SIZE;
-	static constexpr uint32_t LEAKY_TWO_SIZE = 2;
+	static constexpr uint32_t LEAKY_TWO_SIZE = 20;
 	static constexpr uint32_t WEIGHT_TWO_SIZE = LEAKY_ONE_SIZE * LEAKY_TWO_SIZE;
 	static constexpr uint32_t SOFTMAX_SIZE = 9;
 	static constexpr uint32_t WEIGHT_THREE_SIZE = LEAKY_TWO_SIZE * SOFTMAX_SIZE;
@@ -67,20 +67,25 @@ public:
 
 		void Update(float learningRate)
 		{
-			/*cpuClip(weightMatrixThreeDerivative, WEIGHT_THREE_SIZE, learningRate, -0.01f, 0.01f);
+			cpuClip(weightMatrixThreeDerivative, WEIGHT_THREE_SIZE, learningRate, -0.01f, 0.01f);
 			cpuClip(weightMatrixTwoDerivative, WEIGHT_TWO_SIZE, learningRate, -0.01f, 0.01f);
 			cpuClip(biasMatrixOneDerivative, LEAKY_ONE_SIZE, learningRate, -0.01f, 0.01f);
-			cpuClip(weightMatrixOneDerivative, WEIGHT_ONE_SIZE, learningRate, -0.01f, 0.01f);*/
+			cpuClip(weightMatrixOneDerivative, WEIGHT_ONE_SIZE, learningRate, -0.01f, 0.01f);
+
+			cpuSaxpy(WEIGHT_THREE_SIZE, &GLOBAL::ONEF, weightMatrixThreeDerivative, 1, weightMatrixThree, 1);
+			cpuSaxpy(WEIGHT_TWO_SIZE, &GLOBAL::ONEF, weightMatrixTwoDerivative, 1, weightMatrixTwo, 1);
+			cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, biasMatrixOneDerivative, 1, biasMatrixOne, 1);
+			cpuSaxpy(WEIGHT_ONE_SIZE, &GLOBAL::ONEF, weightMatrixOneDerivative, 1, weightMatrixOne, 1);
 			
 			/*PrintMatrix(weightMatrixThree, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three");
 			PrintMatrix(weightMatrixTwo, LEAKY_ONE_SIZE, LEAKY_TWO_SIZE, "Weight Matrix Two");
 			PrintMatrix(biasMatrixOne, 1, LEAKY_ONE_SIZE, "Bias Matrix One");
 			PrintMatrix(weightMatrixOne, INPUT_SIZE, LEAKY_ONE_SIZE, "Weight Matrix One");*/
 
-			cpuSaxpy(WEIGHT_THREE_SIZE, &learningRate, weightMatrixThreeDerivative, 1, weightMatrixThree, 1);
+			/*cpuSaxpy(WEIGHT_THREE_SIZE, &learningRate, weightMatrixThreeDerivative, 1, weightMatrixThree, 1);
 			cpuSaxpy(WEIGHT_TWO_SIZE, &learningRate, weightMatrixTwoDerivative, 1, weightMatrixTwo, 1);
 			cpuSaxpy(LEAKY_ONE_SIZE, &learningRate, biasMatrixOneDerivative, 1, biasMatrixOne, 1);
-			cpuSaxpy(WEIGHT_ONE_SIZE, &learningRate, weightMatrixOneDerivative, 1, weightMatrixOne, 1);
+			cpuSaxpy(WEIGHT_ONE_SIZE, &learningRate, weightMatrixOneDerivative, 1, weightMatrixOne, 1);*/
 
 			/*PrintMatrix(weightMatrixThreeDerivative, LEAKY_TWO_SIZE, SOFTMAX_SIZE, "Weight Matrix Three Derivative");
 			PrintMatrix(weightMatrixTwoDerivative, LEAKY_ONE_SIZE, LEAKY_TWO_SIZE, "Weight Matrix Two Derivative");
@@ -162,6 +167,7 @@ public:
 				1);
 			cpuSaxpy(LEAKY_ONE_SIZE, &GLOBAL::ONEF, parameters->biasMatrixOne, 1, productMatrixOne, 1);
 			cpuLeakyRelu(productMatrixOne, leakyMatrixOne, LEAKY_ONE_SIZE);
+			PrintMatrix(leakyMatrixOne, 1, LEAKY_ONE_SIZE, "Leaky Matrix One");
 			cpuSgemmStridedBatched(
 				false, false,
 				LEAKY_TWO_SIZE, 1, LEAKY_ONE_SIZE,
@@ -171,7 +177,10 @@ public:
 				&GLOBAL::ZEROF,
 				productMatrixTwo, LEAKY_TWO_SIZE, 0,
 				1);
+			PrintMatrix(parameters->weightMatrixTwo, LEAKY_ONE_SIZE, LEAKY_TWO_SIZE, "Weight Matrix Two");
+			PrintMatrix(productMatrixTwo, 1, LEAKY_TWO_SIZE, "Product Matrix Two");
 			cpuLeakyRelu(productMatrixTwo, leakyMatrixTwo, LEAKY_TWO_SIZE);
+			PrintMatrix(leakyMatrixTwo, 1, LEAKY_TWO_SIZE, "Leaky Matrix Two");
 			cpuSgemmStridedBatched(
 				false, false,
 				SOFTMAX_SIZE, 1, LEAKY_TWO_SIZE,
@@ -182,6 +191,7 @@ public:
 				productMatrixThree, SOFTMAX_SIZE, 0,
 				1);
 			cpuSoftmax(productMatrixThree, softmaxMatrix, SOFTMAX_SIZE);
+			PrintMatrix(softmaxMatrix, 1, SOFTMAX_SIZE, "Softmax Matrix");
 
 			float randomNumber = GLOBAL::RANDOM.Rfloat();
 			sampledAction = 0;
@@ -312,7 +322,10 @@ public:
 	{
 		for (auto computation : computations)
 		{
-			computation->BackPropagate();
+			if (*computation->isWinner == false)
+			{
+				computation->BackPropagate();
+			}
 		}
 		//computations.back()->Print();
 		parameters.Update(learningRate * InvSqrt(computations.size()));
